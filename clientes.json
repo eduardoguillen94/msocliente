@@ -1,0 +1,9 @@
+[ {
+  "id" : 1,
+  "nombre" : "Juanito perez",
+  "correo" : "juanperez@gmail.com"
+}, {
+  "id" : 2,
+  "nombre" : "Eduardo Guillen",
+  "correo" : "guillenmaldonadoeduardo@gmail.com"
+} ]
