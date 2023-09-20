@@ -153,11 +153,127 @@ public class ClientesDAOImpl implements ClientesDAO {
 				throw new MsoClientesExceptionAPI(HttpStatus.NOT_FOUND, util.obtenerCodigoResponse(),
 						Constantes.OPERACION_404, util.obtenerFoliador(), Arrays.asList(Constantes.OPERACION_404));
 			}
+
 			ResponseListClientes responseCliente = new ResponseListClientes();
 			responseCliente.setClientes(Arrays.asList(clienteEncontrado));
 			return responseCliente;
 
 		} catch (Exception ex) {
+			throw new MsoClientesExceptionAPI(HttpStatus.INTERNAL_SERVER_ERROR, util.obtenerCodigoResponse(),
+					Constantes.OPERACION_500, util.obtenerFoliador(), Arrays.asList(Constantes.OPERACION_500));
+		}
+
+	}
+
+	@Override
+	public Object actualizaCliente(ClientesModel clienteModel) throws Exception {
+
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		objectMapper.configure(Feature.AUTO_CLOSE_SOURCE, true);
+		objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+		try {
+
+			File myObj = new File(clientesData);
+
+			if (!myObj.exists()) {
+				if (myObj.createNewFile()) {
+					System.out.println("File created: " + myObj.getName());
+					objectMapper.writeValue(myObj, new ArrayList<>());
+				}
+			}
+
+			List<ClientesModel> clientes = Arrays.asList(objectMapper.readValue(myObj, ClientesModel[].class));
+
+			if (clientes.isEmpty()) {
+				throw new MsoClientesExceptionAPI(HttpStatus.NOT_FOUND, util.obtenerCodigoResponse(),
+						Constantes.OPERACION_404, util.obtenerFoliador(), Arrays.asList(Constantes.OPERACION_404));
+			}
+
+			ClientesModel clienteEncontrado = clientes.stream()
+					.filter(cf -> cf.getId().intValue() == clienteModel.getId().intValue()).findFirst().orElse(null);
+
+			if (clienteEncontrado == null) {
+				throw new MsoClientesExceptionAPI(HttpStatus.NOT_FOUND, util.obtenerCodigoResponse(),
+						Constantes.OPERACION_404, util.obtenerFoliador(), Arrays.asList(Constantes.OPERACION_404));
+			}
+
+			ClientesModel clienteBean = new ClientesModel();
+			clienteBean.setId(clienteModel.getId());
+			clienteBean.setNombre(clienteModel.getNombre());
+			clienteBean.setCorreo(clienteModel.getCorreo());
+
+			for (int i = 0; i < clientes.size(); i++) {
+				if (clientes.get(i).getId() == clienteModel.getId()) {
+					clientes.get(i).setNombre(clienteModel.getNombre());
+					clientes.get(i).setCorreo(clienteModel.getCorreo());
+					continue;
+				}
+			}
+
+			if (!clientes.isEmpty()) {
+				objectMapper.writeValue(myObj, clientes);
+			}
+
+			ResponseListClientes responseCliente = new ResponseListClientes();
+			responseCliente.setClientes(Arrays.asList(clienteBean));
+			return responseCliente;
+
+		} catch (Exception ex) {
+			throw new MsoClientesExceptionAPI(HttpStatus.INTERNAL_SERVER_ERROR, util.obtenerCodigoResponse(),
+					Constantes.OPERACION_500, util.obtenerFoliador(), Arrays.asList(Constantes.OPERACION_500));
+		}
+
+	}
+
+	@Override
+	public Object deleteCliente(String nombre) throws Exception {
+
+		boolean respOk = false;
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		objectMapper.configure(Feature.AUTO_CLOSE_SOURCE, true);
+		objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+		try {
+
+			File myObj = new File(clientesData);
+
+			if (!myObj.exists()) {
+				if (myObj.createNewFile()) {
+					System.out.println("File created: " + myObj.getName());
+					objectMapper.writeValue(myObj, new ArrayList<>());
+				}
+			}
+
+			List<ClientesModel> clientes = Arrays.asList(objectMapper.readValue(myObj, ClientesModel[].class));
+
+			List<ClientesModel> clientesSecundario = new ArrayList<>();
+
+			clientes.forEach(c -> {
+				if (!clientesSecundario.contains(c)) {
+					clientesSecundario.add(c);
+				}
+			});
+
+			if (clientes.isEmpty()) {
+				throw new MsoClientesExceptionAPI(HttpStatus.NOT_FOUND, util.obtenerCodigoResponse(),
+						Constantes.OPERACION_404, util.obtenerFoliador(), Arrays.asList(Constantes.OPERACION_404));
+			}
+
+			for (int i = 0; i < clientesSecundario.size(); i++) {
+				if (clientesSecundario.get(i).getNombre().trim().contains(nombre.trim())) {
+					clientesSecundario.remove(i);
+					respOk = true;
+				}
+			}
+
+			if (!clientesSecundario.isEmpty()) {
+				objectMapper.writeValue(myObj, clientesSecundario);
+			}
+			return respOk;
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
 			throw new MsoClientesExceptionAPI(HttpStatus.INTERNAL_SERVER_ERROR, util.obtenerCodigoResponse(),
 					Constantes.OPERACION_500, util.obtenerFoliador(), Arrays.asList(Constantes.OPERACION_500));
 		}

@@ -4,10 +4,14 @@ import com.msoclientes.app.model.ClientesModel;
 
 public interface ClientesDAO {
 
-	public Object setClientes(ClientesModel cliente) throws Exception;
+	Object setClientes(ClientesModel cliente) throws Exception;
 
-	public Object getClientes() throws Exception;
+	Object getClientes() throws Exception;
 
 	Object getDetalleCliente(String nombre) throws Exception;
+
+	Object actualizaCliente(ClientesModel clienteModel) throws Exception;
+
+	Object deleteCliente(String nombre) throws Exception;
 
 }
